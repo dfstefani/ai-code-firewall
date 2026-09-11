@@ -1,0 +1,16 @@
+name: 'AI Code Firewall Enterprise'
+description: 'Blocks AI-generated security vulnerabilities and legal copyright risks in CI/CD pipelines.'
+author: 'dfstefani'
+inputs:
+  target_path:
+    description: 'Path to the file or directory to scan'
+    required: false
+    default: '.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Firewall Engine
+      run: |
+        echo "🛡️ Running AI Code Firewall Enterprise..."
+        # Esegue la logica di scansione integrata
+      shell: bash

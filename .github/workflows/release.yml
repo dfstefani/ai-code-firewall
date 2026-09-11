@@ -1,0 +1,50 @@
+name: Release Compiled Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-release:
+    name: Build for target -> ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: ai-code-firewall
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary_name: ai-code-firewall
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary_name: ai-code-firewall.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Build release binary
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target ${{ matrix.target }}
+
+      - name: Upload Release Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          asset_name: ai-code-firewall-${{ matrix.target }}
+          tag: ${{ github.ref }}
+          overwrite: true
