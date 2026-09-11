@@ -1,0 +1,40 @@
+name: "AI Code Enterprise Firewall"
+
+on:
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+  push:
+    branches: [ "main", "master", "develop" ]
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build Firewall Engine
+        run: cargo build --release
+
+      - name: Run AI Code Firewall on Modified Files
+        run: |
+          # Trova i file modificati o scansiona l'intera directory del codice sorgente
+          echo "🔍 Avvio scansione di sicurezza enterprise..."
+          for file in $(find . -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.go"); do
+            # Salta la cartella target di Rust e di git
+            if [[ "$file" == *"/target/"* ]] || [[ "$file" == *"/.git/"* ]]; then
+              continue
+            fi
+            ./target/release/ai-code-firewall "$file"
+            if [ $? -ne 0 ]; then
+              echo "⛔ Blocco di sicurezza attivato per il file: $file"
+              exit 1
+            fi
+          done
+          echo "✅ Tutti i file superano i controlli di conformità dell'IA."
